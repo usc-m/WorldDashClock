@@ -1,0 +1,6 @@
+<resources>
+
+    <string name="app_name">World Clock Extension for DashClock</string>
+    <string name="extension_description">Shows clocks with the time from places around the world</string>
+
+</resources>

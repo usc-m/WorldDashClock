@@ -1,0 +1,12 @@
+<resources>
+
+    <string name="title_activity_world_clock_settings">World Clock Extension Settings</string>
+
+    <!-- Strings related to Settings -->
+
+
+    <!-- Example General settings -->
+    <string name="pref_header_general">General</string>
+    <string name="pref_timezone">Timezone</string>
+
+</resources>
