@@ -48,10 +48,11 @@ public class WorldClockExtension extends DashClockExtension {
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
 		this.setTz(sp.getString(TZ_PREF, "Australia/Sydney"));
 		
-		this.publishUpdate(generateExtensionData(this.getTz()));
+		this.pushNewData();
 	}
 	
-	private static ExtensionData generateExtensionData(String tzName) {
+	private void pushNewData() {
+		final String tzName = this.getTz();
 		final TimeZone tz = TimeZone.getTimeZone(tzName);
 		final Calendar tzTime = Calendar.getInstance(tz);
 		
@@ -61,6 +62,11 @@ public class WorldClockExtension extends DashClockExtension {
 		StringBuilder status = new StringBuilder();
 		status.append(tzTime.get(Calendar.HOUR_OF_DAY));
 		status.append(':');
+		
+		final int minute = tzTime.get(Calendar.MINUTE);
+		if(minute < 10) {
+			status.append("0");
+		}
 		status.append(tzTime.get(Calendar.MINUTE));
 		
 		StringBuilder title = new StringBuilder();
@@ -73,12 +79,12 @@ public class WorldClockExtension extends DashClockExtension {
 		title.append(status.toString());
 
 		
-		return new ExtensionData()
-				   .visible(true)
-				   .icon(R.drawable.clock)
-				   .status(status.toString())
-				   .expandedTitle(title.toString())
-				   .expandedBody(placeName);
+		this.publishUpdate(new ExtensionData()
+				   		   .visible(true)
+				   		   .icon(R.drawable.clock)
+				   		   .status(status.toString())
+				   		   .expandedTitle(title.toString())
+				   		   .expandedBody(placeName));
 	}
 	
 	class ClockUpdater extends TimerTask {
@@ -91,7 +97,7 @@ public class WorldClockExtension extends DashClockExtension {
 		
 		@Override
 		public void run() {
-			parent.publishUpdate(generateExtensionData(parent.getTz()));
+			parent.pushNewData();
 		}
 		
 	}
