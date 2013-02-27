@@ -17,6 +17,18 @@ import java.util.Locale;
  */
 
 public class DateFormatter {
+	
+	public enum SelectorConstants {
+		DAY_MONTH_DATE (DateFormatter.DAY_MONTH_DATE), 
+		DAY_DATE_MONTH (DateFormatter.DAY_DATE_MONTH), 
+		DATE_MONTH (DateFormatter.DATE_MONTH), 
+		MONTH_DATE (DateFormatter.MONTH_DATE);
+		
+		public final DateFormatAction formatter;
+		
+		SelectorConstants(DateFormatAction d) { formatter = d; }
+	}
+	
 	// DATE FORMATTERS
 	public interface DateFormatAction {
 		public StringPair createDateString(Calendar cal);

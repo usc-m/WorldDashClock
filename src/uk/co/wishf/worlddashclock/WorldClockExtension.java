@@ -1,16 +1,12 @@
 package uk.co.wishf.worlddashclock;
 
 import java.util.Calendar;
-import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import uk.co.wishf.worlddashclock.DateFormatter.DateTimeFormatAction;
-
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 import com.google.android.apps.dashclock.api.DashClockExtension;
 import com.google.android.apps.dashclock.api.ExtensionData;
@@ -18,6 +14,9 @@ import com.google.android.apps.dashclock.api.ExtensionData;
 public class WorldClockExtension extends DashClockExtension {
 	
 	static final String TZ_PREF = "timezone";
+	static final String DATE_FORMAT_PREF = "dateFmt";
+	static final String TWENTYFOUR_HOUR = "24hr";
+	static final String DATE_AT_TIME = "dat";
 	
 	Timer timer;
 	
@@ -53,6 +52,10 @@ public class WorldClockExtension extends DashClockExtension {
 		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
 		this.setTz(sp.getString(TZ_PREF, "Australia/Sydney"));
 		
+		this.packFormatter(sp.getString(DATE_FORMAT_PREF, "DAY_DATE_MONTH"), 
+				           sp.getBoolean(TWENTYFOUR_HOUR, true), 
+				           sp.getBoolean(DATE_AT_TIME, true));
+		
 		this.pushNewData();
 	}
 	
@@ -65,6 +68,14 @@ public class WorldClockExtension extends DashClockExtension {
 				   		   .status(composedDateTime.status)
 				   		   .expandedTitle(composedDateTime.title)
 				   		   .expandedBody(placeName));
+	}
+	
+	private synchronized void packFormatter(String fmtDesc, boolean is24Hour, boolean dateBeforeTime) {
+		DateFormatter.DateFormatAction dFmt = DateFormatter.SelectorConstants.valueOf(fmtDesc).formatter;
+		DateFormatter.TimeFormatAction tFmt = (is24Hour) ? DateFormatter.TWENTYFOUR_HOUR : DateFormatter.TWELEVE_HOUR;
+		DateFormatter.DateTimeFormatAction dtFmt = (dateBeforeTime) ? DateFormatter.DATE_AT_TIME : DateFormatter.TIME_ON_DATE;
+		
+		formatter = new DateFormatter(dFmt, tFmt, dtFmt);
 	}
 	
 	class ClockUpdater extends TimerTask {

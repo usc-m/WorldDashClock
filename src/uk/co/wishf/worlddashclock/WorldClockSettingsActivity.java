@@ -1,24 +1,16 @@
 package uk.co.wishf.worlddashclock;
 
-import android.annotation.TargetApi;
-import android.content.Context;
-import android.content.res.Configuration;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
-import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import android.preference.RingtonePreference;
-import android.text.TextUtils;
+import android.preference.PreferenceScreen;
+
 import android.view.MenuItem;
 
-import java.util.List;
 import java.util.TimeZone;
 
 public class WorldClockSettingsActivity extends PreferenceActivity {
@@ -48,11 +40,15 @@ public class WorldClockSettingsActivity extends PreferenceActivity {
 	 * shown.
 	 */
 	private void setupSimplePreferencesScreen() {
-		// In the simplified UI, fragments are not used at all and we instead
-		// use the older PreferenceActivity APIs.
-
-		// Add 'general' preferences.
 		addPreferencesFromResource(R.xml.pref_general);
+		
+		PreferenceScreen screen = this.getPreferenceScreen();
+		
+		// Timezone category
+		PreferenceCategory tzCat = new PreferenceCategory(this);
+		tzCat.setTitle("Timezone");
+		
+		screen.addPreference(tzCat);
 		
 		String[] timezones = TimeZone.getAvailableIDs();
 		
@@ -63,9 +59,48 @@ public class WorldClockSettingsActivity extends PreferenceActivity {
 		listPref.setDialogTitle("Select Timezone");
 		listPref.setTitle("Timezone");
 		
-		getPreferenceScreen().addPreference(listPref);
+		bindPreferenceSummaryToValue(listPref);
 		
-		this.bindPreferenceSummaryToValue(listPref);
+		tzCat.addPreference(listPref);
+		
+		// Formatting category
+		PreferenceCategory fmtCat = new PreferenceCategory(this);
+		fmtCat.setTitle("Formatting");
+		
+		screen.addPreference(fmtCat);
+		
+		CheckBoxPreference twentyFourHourClock = new CheckBoxPreference(this);
+		twentyFourHourClock.setTitle("Display times in 24 hour format");
+		twentyFourHourClock.setChecked(true);
+		twentyFourHourClock.setKey(WorldClockExtension.TWENTYFOUR_HOUR);
+		
+		fmtCat.addPreference(twentyFourHourClock);
+		
+		DateFormatter.SelectorConstants[] vals = DateFormatter.SelectorConstants.values();
+		String[] names = new String[vals.length];
+		
+		for(int i = 0; i < vals.length; i++) {
+			names[i] = vals[i].toString();
+		}
+		
+		ListPreference dateFormat = new ListPreference(this);
+		dateFormat.setKey(WorldClockExtension.DATE_FORMAT_PREF);
+		dateFormat.setEntries(new String[] {"Wed, Feb 27", "Wed, 27 Feb", "Feb 27", "27 Feb"});
+		dateFormat.setEntryValues(names);
+		dateFormat.setDialogTitle("Select Date Format");
+		dateFormat.setTitle("Date Format");
+		
+		bindPreferenceSummaryToValue(dateFormat);
+		
+		fmtCat.addPreference(dateFormat);
+		
+		CheckBoxPreference dateBeforeTime = new CheckBoxPreference(this);
+		dateBeforeTime.setTitle("Display date in front of time");
+		dateBeforeTime.setSummary("Toggles between \"DATE at TIME\" and \"TIME on DATE\" display");
+		dateBeforeTime.setChecked(true);
+		dateBeforeTime.setKey(WorldClockExtension.DATE_AT_TIME);
+		
+		fmtCat.addPreference(dateBeforeTime);
 	}
 
 	/**
