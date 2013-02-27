@@ -6,6 +6,8 @@ import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import uk.co.wishf.worlddashclock.DateFormatter.DateTimeFormatAction;
+
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -20,13 +22,16 @@ public class WorldClockExtension extends DashClockExtension {
 	Timer timer;
 	
 	String userTz;
-	
-	protected synchronized String getTz() {
-		return userTz;
-	}
+	Calendar tzTime;
+	DateFormatter formatter;
+	String placeName;
 	
 	private synchronized void setTz(String tz) {
 		userTz = tz;
+		tzTime = Calendar.getInstance(TimeZone.getTimeZone(tz));
+		
+		String[] nameComponents = tz.replace('_', ' ').split("/");
+		placeName = String.format("%s, %s", nameComponents[1], nameComponents[0]);
 	}
 	
 	@Override
@@ -51,39 +56,14 @@ public class WorldClockExtension extends DashClockExtension {
 		this.pushNewData();
 	}
 	
-	private void pushNewData() {
-		final String tzName = this.getTz();
-		final TimeZone tz = TimeZone.getTimeZone(tzName);
-		final Calendar tzTime = Calendar.getInstance(tz);
-		
-		String[] nameComponents = tzName.replace('_', ' ').split("/");
-		String placeName = String.format("%s, %s", nameComponents[1], nameComponents[0]);
-		
-		StringBuilder status = new StringBuilder();
-		status.append(tzTime.get(Calendar.HOUR_OF_DAY));
-		status.append(':');
-		
-		final int minute = tzTime.get(Calendar.MINUTE);
-		if(minute < 10) {
-			status.append("0");
-		}
-		status.append(tzTime.get(Calendar.MINUTE));
-		
-		StringBuilder title = new StringBuilder();
-		title.append(tzTime.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.getDefault()));
-		title.append(", ");
-		title.append(tzTime.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.getDefault()));
-		title.append(' ');
-		title.append(tzTime.get(Calendar.DAY_OF_MONTH));
-		title.append(" at ");
-		title.append(status.toString());
-
+	private synchronized void pushNewData() {	
+		final StringPair composedDateTime = formatter.format(tzTime);
 		
 		this.publishUpdate(new ExtensionData()
 				   		   .visible(true)
 				   		   .icon(R.drawable.clock)
-				   		   .status(status.toString())
-				   		   .expandedTitle(title.toString())
+				   		   .status(composedDateTime.status)
+				   		   .expandedTitle(composedDateTime.title)
 				   		   .expandedBody(placeName));
 	}
 	
